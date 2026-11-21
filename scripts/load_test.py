@@ -34,16 +34,25 @@ def main():
     latencies = sorted(ms for _, _, ms in results)
     errors = sum(1 for _, status, _ in results if status >= 500 or status == 0)
     up = sum(1 for _, status, _ in health if status == 200)
+    # The same numbers per block of 20 requests, in the order they were sent, for sparklines
+    blocks = [results[i:i + 20] for i in range(0, TOTAL, 20)]
+    series = {
+        "error_rate_pct": [round(sum(1 for _, st, _ in blk if st >= 500 or st == 0) / len(blk) * 100, 1) for blk in blocks],
+        "p95_ms": [round(sorted(ms for _, _, ms in blk)[int(len(blk) * 0.95) - 1], 1) for blk in blocks],
+    }
     summary = {
         "requests": TOTAL,
         "errors": errors,
         "error_rate_pct": round(errors / TOTAL * 100, 2),
         "p95_ms": round(latencies[int(len(latencies) * 0.95) - 1], 1),
         "uptime_pct": round(up / len(health) * 100, 2),
+        "series": series,
     }
     with open("results.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
-    print(json.dumps(summary, indent=2))
+    print(json.dumps({k: v for k, v in summary.items() if k != "series"}, indent=2))
+    print("error rate per 20 requests:", " ".join(map(str, series["error_rate_pct"])))
+    print("p95 ms per 20 requests:    ", " ".join(map(str, series["p95_ms"])))
 
 
 if __name__ == "__main__":
