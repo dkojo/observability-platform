@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 SERVICE = "orders-api"
-FAIL_EVERY = 200  # 1 failed checkout in 200, a 0.5% error rate on checkout
+FAIL_EVERY = 10  # 1 failed checkout in 10
 ORDERS = [
     {"id": 1, "item": "keyboard", "total": 49.99},
     {"id": 2, "item": "monitor", "total": 189.00},
