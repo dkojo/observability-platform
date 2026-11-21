@@ -1,4 +1,4 @@
-"""Send the load test results to Datadog as metrics, plus one event describing the run.
+"""Send the load test results to Datadog as metrics.
 
   DD_API_KEY=... DD_SITE=datadoghq.com python scripts/send_datadog.py
 The Datadog monitor in infra/main.tf alerts on orders_api.error_rate.
@@ -33,13 +33,4 @@ series = [
 status = post("/api/v2/series", {"series": series})
 print(f"metrics: orders_api.error_rate, .latency.p95, .uptime -> HTTP {status}")
 
-run = os.environ.get("GITHUB_RUN_NUMBER", "local")
-event = {
-    "title": f"orders-api load test, run #{run}",
-    "text": f"{r['requests']} requests, {r['errors']} errors ({r['error_rate_pct']}%), p95 {r['p95_ms']} ms, uptime {r['uptime_pct']}%",
-    "alert_type": "error" if r["error_rate_pct"] > 1 else "success",
-    "tags": TAGS,
-}
-status_ev = post("/api/v1/events", event)
-print(f"event: {event['title']} -> HTTP {status_ev}")
-sys.exit(0 if status in (200, 202) and status_ev in (200, 202) else 1)
+sys.exit(0 if status in (200, 202) else 1)

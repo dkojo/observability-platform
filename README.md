@@ -13,7 +13,7 @@ flowchart LR
   app[orders-api] -->|JSON logs| ls[Logstash] --> es[(Elasticsearch)] --> kb[Kibana]
   app -->|load test| lt[Load test results]
   lt -->|metrics| cw[CloudWatch] --> alarm[Alarms → ops-alerts email]
-  lt -->|metrics + event| dd[Datadog] --> mon[Monitor → email]
+  lt -->|metrics| dd[Datadog] --> mon[Monitor → email]
   lt --> slo{SLO check}
 ```
 
@@ -25,7 +25,7 @@ flowchart LR
 | 4. Logstash → Elasticsearch | Every request's log line must arrive in Elasticsearch with numeric fields | A log line is lost or isn't parsed |
 | 5. Kibana | Imports a data view and two saved searches: **Errors** and **Slow requests** | Kibana rejects them |
 | 6. CloudWatch | Publishes the three metrics and checks the two alarms watching them exist | AWS rejects the metrics or an alarm is missing |
-| 7. Datadog | Sends the same metrics and an event describing the run | Datadog rejects them |
+| 7. Datadog | Sends the same three metrics, which the Datadog monitor watches | Datadog rejects them |
 | 8. SLO check | Uptime ≥ 99.9%, error rate ≤ 1%, p95 latency ≤ 300 ms | The service misses an objective |
 
 The SLO check runs last on purpose: when something is wrong, the metrics have already reached CloudWatch and Datadog, so the alarms fire as they would in production.
